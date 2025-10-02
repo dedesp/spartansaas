@@ -76,7 +76,7 @@ CREATE TABLE loan_products (
     interest_type TEXT NOT NULL CHECK(interest_type IN ('flat', 'effective')),
     admin_fee_percentage REAL NOT NULL DEFAULT 0 CHECK(admin_fee_percentage >= 0),
     late_fee_percentage REAL NOT NULL DEFAULT 0 CHECK(late_fee_percentage >= 0),
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    is_active INTEGER NOT NULL DEFAULT 1 CHECK(is_active IN (0, 1)),
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now')),
     CHECK(max_amount >= min_amount),
@@ -265,7 +265,7 @@ CREATE TABLE notifications (
     type TEXT NOT NULL CHECK(type IN ('loan_status', 'payment_reminder', 'payment_received', 'investment', 'kyc', 'general')),
     title TEXT NOT NULL,
     message TEXT NOT NULL,
-    is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    is_read INTEGER NOT NULL DEFAULT 0 CHECK(is_read IN (0, 1)),
     read_at TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -339,4 +339,4 @@ CREATE INDEX idx_wallet_transactions_created_at ON wallet_transactions(created_a
 -- Notifications indexes
 CREATE INDEX idx_notifications_user_id ON notifications(user_id);
 CREATE INDEX idx_notifications_is_read ON notifications(is_read);
-CREATE INDEX idx_notifications_created_at ON notifications(created_at);
+CREATE INDEX idx_notifications_created_at ON notifications(created_at   
