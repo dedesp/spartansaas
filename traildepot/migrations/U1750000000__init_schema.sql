@@ -336,7 +336,9 @@ CREATE INDEX idx_wallet_transactions_wallet_id ON wallet_transactions(wallet_id)
 CREATE INDEX idx_wallet_transactions_type ON wallet_transactions(transaction_type);
 CREATE INDEX idx_wallet_transactions_created_at ON wallet_transactions(created_at);
 
+
 -- Notifications indexes
 CREATE INDEX idx_notifications_user_id ON notifications(user_id);
 CREATE INDEX idx_notifications_is_read ON notifications(is_read);
-CREATE INDEX idx_notifications_created_at ON notifications(created_at   
+CREATE INDEX idx_notifications_created_at ON notifications(created_at);
+
