@@ -1,12 +1,12 @@
 # Agents Overview
 
-This document synthesizes the roles, automations, and human/AI agents implied across the five project documents:
+This document synthesizes the roles, automations, and human/AI agents implied across the five project documents (all located in the `docs/` directory):
 
-- konsep-aplikasi-pinjol.md
-- requirements-specification.md
-- database-schema-detail.md
-- technical-architecture.md
-- RINGKASAN-KONSEP-PINJOL.md
+- docs/konsep-aplikasi-pinjol.md
+- docs/requirements-specification.md
+- docs/database-schema-detail.md
+- docs/technical-architecture.md
+- docs/RINGKASAN-KONSEP-PINJOL.md
 
 The goal is to clarify which agents exist in the KreditKu ecosystem, what they do, how they interact, and what data they need.
 
