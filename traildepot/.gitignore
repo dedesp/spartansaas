@@ -1,0 +1,31 @@
+# TrailBase runtime files
+*.db
+*.db-shm
+*.db-wal
+logs.db*
+main.db*
+
+# TrailBase deployment
+deployment/
+
+# Auto-generated config (may be edited by Admin UI)
+config.textproto
+config_record_apis.textproto
+
+# Secrets
+secrets/
+
+# Backups
+backups/
+*.backup
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
