@@ -1,12 +1,12 @@
 # Agents Overview
 
-This document synthesizes the roles, automations, and human/AI agents implied across the five project documents (all located in the `docs/` directory):
+This document synthesizes the roles, automations, and human/AI agents implied across the five project documents:
 
-- docs/konsep-aplikasi-pinjol.md
-- docs/requirements-specification.md
-- docs/database-schema-detail.md
-- docs/technical-architecture.md
-- docs/RINGKASAN-KONSEP-PINJOL.md
+- konsep-aplikasi-pinjol.md
+- requirements-specification.md
+- database-schema-detail.md
+- technical-architecture.md
+- RINGKASAN-KONSEP-PINJOL.md
 
 The goal is to clarify which agents exist in the KreditKu ecosystem, what they do, how they interact, and what data they need.
 
@@ -162,3 +162,83 @@ Core tables per database-schema-detail.md utilized by agents:
   chart_of_accounts, journal_entries, journal_lines, system_configurations, blacklist
 
 This document will guide implementation of services and scheduled jobs as discrete agents within the TrailBase deployment.
+
+---
+
+## 11. Agent Summary Table
+
+| Agent | Type | Triggers | Key Responsibilities | Primary Tables |
+|------|------|----------|----------------------|----------------|
+| Mobile Client | Client | User actions | Registration, KYC upload, loan apply, payment, notifications | users, kyc_verifications, loans, payments |
+| Web Admin | Client | Staff actions | KYC review, approvals, collections, reporting | users, loans, payments, collection_cases |
+| Auth | Service | Register/login, refresh | OTP, JWT, sessions, rate limit | users, user_sessions, audit_logs |
+| KYC | Service | Doc/selfie submit | OCR, face match, liveness, risk flags | kyc_verifications, users, blacklist |
+| Credit Scoring | Service | KYC complete, apply, payment | Score compute/update, logging | credit_scoring_logs, users, loans, payments |
+| Underwriting | Service | Loan application | Eligibility, pricing, (auto/manual) decision | loans, users, system_configurations |
+| Disbursement | Service | Approval | Payout initiation, status tracking, accounting | loans, journal_entries, journal_lines |
+| Payment | Service | Pay init/webhook | VA generation, confirmation, reconciliation | payments, loans, journal_entries |
+| Anti-Fraud | Service | Auth/KYC/apply/payment | Device/behavior/network checks, actions | fraud_detection_logs, blacklist, users |
+| Notification | Service | Events/schedules | Multi-channel send, retry/fallback, quiet hours | notifications, users |
+| Collection | Service | Overdue/DPD | Segmentation, reminders, activities, escalation | collection_cases, collection_activities |
+| Accounting | Service | Disb/pay/fees | Double-entry posting, closing, reporting | chart_of_accounts, journal_entries, journal_lines |
+| Monitoring | Service | Continuous | Metrics, health, alerts | metrics (exposed), logs |
+
+---
+
+## 12. Key Flow Diagrams
+
+### 12.1 KYC Verification Flow
+
+```mermaid
+sequenceDiagram
+    participant Mobile as Mobile Client
+    participant API as API (KYC Agent)
+    participant OCR as OCR Service
+    participant FACE as Face Service
+    participant DB as DB
+
+    Mobile->>API: Upload KTP, Selfie, Selfie+KTP
+    API->>OCR: Extract KTP fields
+    OCR-->>API: NIK, Name, Address, DOB
+    API->>FACE: Liveness + Face Match
+    FACE-->>API: Scores (liveness, match)
+    API->>DB: Save kyc_verifications
+    alt Scores above thresholds
+        API-->>Mobile: KYC success
+    else Borderline/Failed
+        API-->>Mobile: Pending manual review / Failed
+    end
+```
+
+### 12.2 Payment and Reconciliation Flow
+
+```mermaid
+sequenceDiagram
+    participant Mobile as Mobile Client
+    participant PaySvc as Payment Agent
+    participant PG as Payment Gateway
+    participant DB as DB
+    participant Notify as Notification Agent
+
+    Mobile->>PaySvc: Initiate payment
+    PaySvc->>PG: Create VA
+    PG-->>PaySvc: VA number + expiry
+    PaySvc-->>Mobile: VA details
+    PG-->>PaySvc: Webhook (paid)
+    PaySvc->>DB: Update payments/loans, post journal
+    PaySvc->>Notify: Send receipt
+```
+
+### 12.3 Overdue and Collection Flow
+
+```mermaid
+flowchart TD
+    A[Scheduler] --> B{Detect Overdue Loans}
+    B -->|Yes| C[Create/Update Collection Case]
+    C --> D[Assign Segment & Stage]
+    D --> E[Schedule Reminders]
+    E --> F{Payment Received?}
+    F -->|Yes| G[Update Case, Close if Paid]
+    F -->|No| H[Escalate Stage]
+    H --> I[Collector Activities Logged]
+```
